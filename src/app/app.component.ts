@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild,Renderer2} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild, Renderer2} from '@angular/core';
 import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
 
 @Component({
@@ -13,9 +13,15 @@ import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
 export class AppComponent implements OnInit {
   @ViewChild("board_table") board!: ElementRef
 
-  constructor(private readonly render:Renderer2 ) {
+  constructor(private readonly render: Renderer2) {
   }
+
   title = 'WTF';
+  elementOnDrag!: {
+    cell:number,
+    img:HTMLImageElement
+  }
+
 
   ngAfterViewInit() {
     this.setBoard();
@@ -37,31 +43,36 @@ export class AppComponent implements OnInit {
         const thElement = this.render.createElement('th')
         color = color == "#ECDBBA" ? "#2D4263" : "#ECDBBA";
 
-        this.render.addClass(thElement,'item')
-        this.render.setStyle(thElement,'background-color',color)
+        this.render.addClass(thElement, 'item')
+        this.render.setStyle(thElement, 'background-color', color)
+        const id = `cell${i+"-"+j}`
 
-        this.render.setAttribute(thElement,'id',`cell${i}-${j}`)
-        this.render.appendChild(trElement,thElement)
-        this.render.listen(thElement,"dragenter",this.onDragEnter);
+        this.render.setAttribute(thElement, 'id', id.toString())
+        this.render.appendChild(trElement, thElement)
+        this.render.listen(thElement, "dragstart", this.onDragStarted);
+        this.render.listen(thElement, "dragenter", this.onDragEnter);
+        this.render.listen(thElement, "dragleave", this.onDragLeaver);
+        this.render.listen(thElement, "dragend", this.onDragEnd);
+        this.render.listen(thElement, "dragdrop", this.onDragDrop);
+        this.render.listen(thElement, "click", event => this.onClick("irr"))
       }
 
-      this.render.appendChild(this.board.nativeElement,trElement);
+      this.render.appendChild(this.board.nativeElement, trElement);
 
     }
 
     //
-      this.addImgToCell("cell1-4",true,"king");
-    this.addImgToCell("cell2-4",true,"pawn");
-    this.addImgToCell("cell8-4",false,"king");
-    this.addImgToCell("cell7-4",false,"pawn");
-
+    this.addImgToCell("cell1-4", true, "king");
+    this.addImgToCell("cell2-4", true, "pawn");
+    this.addImgToCell("cell8-4", false, "king");
+    this.addImgToCell("cell7-4", false, "pawn");
 
 
 //     (<HTMLElement>document.getElementById("cell1-5")).innerHTML = `<img src="assets/img/kingBlack.png " class="item">`;
 
   }
-  onDrop(event:CdkDragDrop<HTMLElement>)
-  {
+
+  onDrop(event: CdkDragDrop<HTMLElement>) {
 
   }
 
@@ -69,21 +80,42 @@ export class AppComponent implements OnInit {
     const size = 100;
 
     const source = () => {
-      const root  = "assets/img/";
-      if(type == "king"){
-        if(isBlack) return  root + "kingBlack.png"
-        else return  root +"kingWhite.png"
-      }else{
-        if(isBlack) return  root + "pawnBlack.png"
-        else return  root +"pawnWhite.png"
+      const root = "assets/img/";
+      if (type == "king") {
+        if (isBlack) return root + "kingBlack.png"
+        else return root + "kingWhite.png"
+      } else {
+        if (isBlack) return root + "pawnBlack.png"
+        else return root + "pawnWhite.png"
       }
 
     };
     (<HTMLElement>document.getElementById(id)).innerHTML = `<img draggable="true"  src="${source()}"  alt="pawn" style="padding: 5px;width: ${size}%;height: :${size}%;" />`
   }
 
-  onDragEnter(event:any){
-    console.log("Mouse Enter in ", event.target)
+  onDragStarted(event: any) {
+    console.log("Mouse Enter in ", event.currentTarget.id)
+  }
+
+  onDragEnter(event: DragEvent) {
+    // console.log("Drag enter on ", event.currentTarget)
+
+  }
+
+  onDragLeaver(event: DragEvent) {
+    // console.log("Drag left on ", event.currentTarget)
+  }
+
+  onDragEnd(event: DragEvent) {
+    // console.log("Drag End on ", event.currentTarget)
+  }
+
+  onDragDrop(event: DragEvent) {
+    // console.log("Drag dropped on ", event.currentTarget)
+  }
+
+  onClick(id: any) {
+    console.log(id)
   }
 
 }
