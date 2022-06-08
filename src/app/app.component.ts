@@ -1,5 +1,6 @@
-import {Component, ElementRef, OnInit, ViewChild, Renderer2} from '@angular/core';
-import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
+import {Component, ElementRef, OnInit, Renderer2, ViewChild} from '@angular/core';
+import {CdkDragDrop} from "@angular/cdk/drag-drop";
+import Constants from "./Constants";
 
 @Component({
   selector: 'app-root',
@@ -17,10 +18,10 @@ export class AppComponent implements OnInit {
   }
 
   title = 'WTF';
-  elementOnDrag!: {
-    cell:number,
-    img:HTMLImageElement
-  }
+  elementOnDrag: {
+    cell?: number,
+    img?: any
+  } = {}
 
 
   ngAfterViewInit() {
@@ -45,7 +46,7 @@ export class AppComponent implements OnInit {
 
         this.render.addClass(thElement, 'item')
         this.render.setStyle(thElement, 'background-color', color)
-        const id = `cell${i+"-"+j}`
+        const id = `cell${i + "-" + j}`
 
         this.render.setAttribute(thElement, 'id', id.toString())
         this.render.appendChild(trElement, thElement)
@@ -63,6 +64,7 @@ export class AppComponent implements OnInit {
 
     //
     this.addImgToCell("cell1-4", true, "king");
+    this.addImgToCell("cell1-5", true, "king");
     this.addImgToCell("cell2-4", true, "pawn");
     this.addImgToCell("cell8-4", false, "king");
     this.addImgToCell("cell7-4", false, "pawn");
@@ -94,11 +96,18 @@ export class AppComponent implements OnInit {
   }
 
   onDragStarted(event: any) {
-    console.log("Mouse Enter in ", event.currentTarget.id)
+    Constants.elementOnDrag = {
+      cell: event.currentTarget.id,
+      img: event.target,
+      isKing: (event.target as HTMLImageElement).src.includes("king"),
+      isPawnWhite: (event.target as HTMLImageElement).src.includes("pawnWhite")
+
+    }
+
   }
 
-  onDragEnter(event: DragEvent) {
-    // console.log("Drag enter on ", event.currentTarget)
+  onDragEnter(event: any) {
+    Constants.elementTarget = event.currentTarget.id
 
   }
 
@@ -107,16 +116,31 @@ export class AppComponent implements OnInit {
   }
 
   onDragEnd(event: DragEvent) {
-    // console.log("Drag End on ", event.currentTarget)
+    const img = Constants.elementOnDrag.img
+    const size = 100;
+    if (Constants.elementTarget === String(Constants.elementOnDrag.cell)) {
+      return
+    }
+    const target = (<HTMLElement>document.getElementById(String(Constants.elementTarget))).innerHTML;
+    if (target != '') return
+
+    if (!Constants.canItMove(Constants.elementOnDrag)) return
+    (<HTMLElement>document.getElementById(Constants.elementTarget)).innerHTML = `<img draggable="true"  src="${img?.src}"  alt="pawn" style="padding: 5px;width: ${size}%;height: :${size}%;" />`;
+    (<HTMLElement>document.getElementById(String(Constants.elementOnDrag?.cell!))).innerHTML = ``;
+    Constants.elementOnDrag = {}
+    Constants.elementTarget = ''
+
+
   }
 
-  onDragDrop(event: DragEvent) {
-    // console.log("Drag dropped on ", event.currentTarget)
+  onDragDrop(event: any) {
+    console.log("Dropped")
   }
 
   onClick(id: any) {
     console.log(id)
   }
+
 
 }
 
